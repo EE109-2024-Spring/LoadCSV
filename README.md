@@ -61,10 +61,11 @@ Let's see an example fixed point data type that used 16 bits each for the intege
 type T = FixPt[TRUE,_16,_16]
 ```
 
-**Range**
+#### **Range**
 Because we are using 16 bits to express the integer part and it is singed, the range of the integer part is $-2^{15} (= -32768)$ ~ $2^{15}-1 (= 32767)$. Therefore, this data type can express values between -32768 and 32767.XXX.
 
-**Precision**
+#### **Precision**
+
 Since we are using 16 bits for the fractional part, the smallest gap between two values is `0b0.0000000000000001` = $2^{-16}$ = $\frac{1}{65536}$ = $0.0000152587890625$. 
 
 This implies three things:
