@@ -9,7 +9,7 @@ import spatial.dsl._
     
     // These are on the HOST
     val A_host = loadCSV2D[T](s"$DATA/mat.csv")
-    val A_dram = DRAM[T](3,2)
+    val A_dram = DRAM[T](5,2)
     setMem(A_dram, A_host)
     
     val a_mat = getMatrix(A_dram)
