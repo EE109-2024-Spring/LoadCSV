@@ -70,23 +70,31 @@ Since we are using 16 bits for the fractional part, the smallest gap between two
 This implies three things:
 * **The reason why values in DRAM maynot be identical to the values in the csv file**:If the value is not exactly representable with 16 fractional bits, it will be represented to the closest value that can be expressed using the 16 fractional bits.
 * **Bound of the error**: The error between your actual value in the csv file and the value casted to the given fixed point type will be always smaller than $0.0000152587890625$.
-* **Why Overflow, Underflow happens**: As there is a limited range it can express, if the value goes outside the range, either overflow or underflow will happen, leading to a value that you haven't expected.
+* **Why Overflow happens**: As there is a limited range it can express, if the value goes outside the range, overflow will happen, leading to a value that you haven't expected.
 
 The `data/mat.csv` file contains some representative values that show these cases:
 | Value in CSV file | Value in Spatial's DRAM | Explanation |
 |-------------------|-------------------------|-------------|
 | 1.125     | 1.125     | The fractional part can be exactly expressed using 16 bits (`0b1.001`), so the value will be the same.
 | 1.875     | 1.875     | The fractional part can be exactly expressed using 16 bits (`0b1.111`), so the value will be the same.
-| 0.03125   | 0.03125   | The fractional part can be exactly expressed using 16 bits (`0b1.00001`), so the value will be the same.
-| 0.015625  | 0.015625  | The fractional part can be exactly expressed using 16 bits (`0b1.000001`), so the value will be the same.
-| 0.03126   | 0.03125   | 
-| 0.015624  | 0.0156097412109375        |
-| -32768    | -32768    |
-| 32767.015624 | 32767.0156097412109375 |
-| -32768.015624| 32767.9843902587890625 |
-| 32768.015624 | -32767.9843902587890625|
+| 0.03125   | 0.03125   | The fractional part can be exactly expressed using 16 bits (`0b0.00001`), so the value will be the same.
+| 0.015625  | 0.015625  | The fractional part can be exactly expressed using 16 bits (`0b0.000001`), so the value will be the same.
+| 0.03126   | 0.03125   | The fractional part cannot be exactly expressed using 16 bits. It is between `0b0.00001`(=0.03125) and `0b0.0000100000000001`(=0.0312652587890625), so the value will be expressed to the closest value that can be expressed with 16 fractional bits, which will be `0b0.00001`(=0.03125).
+| 0.015624  | 0.0156097412109375        | The fractional part cannot be exactly expressed using 16 bits. It is between `0b0.0000001111111111`(=0.0156097412109375) and `0b0.000001`(=0.015625), so the value will be expressed to the closest value that can be expressed with 16 fractional bits, which will be `0b0.0000001111111111`(=0.0156097412109375).
+| -32768    | -32768    | As this is within the range the fixed point can express, there is no overflow. This will be the smallest value you can express in this data type.
+| 32767.015624 | 32767.0156097412109375 | The value is casted to the closest value that can be expressed with 16 fractional bits. This also does not cause overflow as the data type can express upto `0b0111111111111111.1111111111111111`(=32767.9999847412109375).
+| -32768.015624| 32767.9843902587890625 | This will result in overflow as the value is smaller than -32768, which is outside of the range this data type can express.
+| 32768.015624 | -32767.9843902587890625| This will also result in overflow as the value is larger than 32767.9999847412109375, which is outside of the range this data type can express.
 
-## End-to-end example
+
+## For the Project:
+* If your project requires reading in real numbers fron csv files, try to look at the values you have in your files and decide what will be the proper range and precision you need.
+* You can use this repository to convert your data to a value that is casted to a given fixed point data type and use that to calculate the gold for your application. The `mat.csv` file contains the numbers that I initially had, and the `output.csv` file holds the closest value that can be expressed in the given fixed point data type.
+* As the calculation is also done in fixed point values, the output value can also be slightly different. For example, say that we want to do $0.5 * 0.015624 = 0.007812$:
+    * In `Q16.16` fixed point, $0.5 * 0.0156097412109375 = 0.0078048706054688$
+        * `QA.B` means that A bits are used for integer and B bits are used for the fractional part.
+
+## End-to-end example Reference
 An end-to-end example code that uses csv files to load inputs and save outputs can be found in [this repository](https://github.com/cs217/example_student_code)
 * GEMV example: https://github.com/cs217/example_student_code/blob/master/src/test/scala/GEMV.scala
     * loadCSV1D
