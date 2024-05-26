@@ -73,7 +73,18 @@ This implies three things:
 * **Why Overflow, Underflow happens**: As there is a limited range it can express, if the value goes outside the range, either overflow or underflow will happen, leading to a value that you haven't expected.
 
 The `data/mat.csv` file contains some representative values that show these cases:
-
+| Value in CSV file | Value in Spatial's DRAM | Explanation |
+|-------------------|-------------------------|-------------|
+| 1.125     | 1.125     | The fractional part can be exactly expressed using 16 bits (`0b1.001`), so the value will be the same.
+| 1.875     | 1.875     | The fractional part can be exactly expressed using 16 bits (`0b1.111`), so the value will be the same.
+| 0.03125   | 0.03125   | The fractional part can be exactly expressed using 16 bits (`0b1.00001`), so the value will be the same.
+| 0.015625  | 0.015625  | The fractional part can be exactly expressed using 16 bits (`0b1.000001`), so the value will be the same.
+| 0.03126   | 0.03125   | 
+| 0.015624  | 0.0156097412109375        |
+| -32768    | -32768    |
+| 32767.015624 | 32767.0156097412109375 |
+| -32768.015624| 32767.9843902587890625 |
+| 32768.015624 | -32767.9843902587890625|
 
 ## End-to-end example
 An end-to-end example code that uses csv files to load inputs and save outputs can be found in [this repository](https://github.com/cs217/example_student_code)
